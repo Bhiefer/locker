@@ -1,20 +1,27 @@
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS locations (
-                                         id          INTEGER PRIMARY KEY,
-                                         code        TEXT NOT NULL UNIQUE,
-                                         name        TEXT NOT NULL
-);
+    id                          INTEGER PRIMARY KEY,
+    code                        TEXT NOT NULL UNIQUE,
+    name                        TEXT NOT NULL,
+
+    service_pin_code            TEXT,                        -- 6 číslic jako text (např. "834927")
+    service_pin_failed_attempts INTEGER NOT NULL DEFAULT 0,
+    service_pin_max_attempts    INTEGER NOT NULL DEFAULT 10,
+    service_pin_locked_until    TEXT,                        -- ISO-8601, např. "2025-12-23T10:15:30Z"
+
+    created_at                  TEXT NOT NULL DEFAULT (datetime('now'))
+    );
 
 CREATE TABLE IF NOT EXISTS products (
-                                        id          INTEGER PRIMARY KEY,
-                                        sku         TEXT NOT NULL UNIQUE,
-                                        name        TEXT NOT NULL
-);
+    id          INTEGER PRIMARY KEY,
+    sku         TEXT NOT NULL UNIQUE,
+    name        TEXT NOT NULL
+    );
 
 CREATE TABLE IF NOT EXISTS product_variations (
-                                                  id               INTEGER PRIMARY KEY,
-                                                  product_id       INTEGER NOT NULL REFERENCES products(id),
+    id               INTEGER PRIMARY KEY,
+    product_id       INTEGER NOT NULL REFERENCES products(id),
     location_id      INTEGER NOT NULL REFERENCES locations(id),
     code             TEXT NOT NULL UNIQUE,
     woo_variation_id INTEGER,
@@ -22,8 +29,8 @@ CREATE TABLE IF NOT EXISTS product_variations (
     );
 
 CREATE TABLE IF NOT EXISTS boxes (
-                                     id                    INTEGER PRIMARY KEY,
-                                     location_id           INTEGER NOT NULL REFERENCES locations(id),
+    id                    INTEGER PRIMARY KEY,
+    location_id           INTEGER NOT NULL REFERENCES locations(id),
     product_variation_id  INTEGER NOT NULL REFERENCES product_variations(id),
     box_no                INTEGER NOT NULL,
     state                 TEXT NOT NULL CHECK (state IN ('EMPTY','AVAILABLE','RESERVED','OUT_OF_SERVICE')),
@@ -34,9 +41,9 @@ CREATE TABLE IF NOT EXISTS boxes (
 CREATE INDEX IF NOT EXISTS idx_boxes_by_variation_state ON boxes(product_variation_id, state);
 
 CREATE TABLE IF NOT EXISTS orders (
-                                      id             INTEGER PRIMARY KEY,
-                                      woo_order_id   INTEGER NOT NULL UNIQUE,
-                                      location_id    INTEGER NOT NULL REFERENCES locations(id),
+    id             INTEGER PRIMARY KEY,
+    woo_order_id   INTEGER NOT NULL UNIQUE,
+    location_id    INTEGER NOT NULL REFERENCES locations(id),
     status         TEXT NOT NULL CHECK (status IN ('PAID_RESERVED','PICKED_UP','EXPIRED','CANCELLED')),
     reserved_at    TEXT NOT NULL DEFAULT (datetime('now')),
     expires_at     TEXT NOT NULL,
@@ -46,8 +53,8 @@ CREATE TABLE IF NOT EXISTS orders (
 CREATE INDEX IF NOT EXISTS idx_orders_by_status_expires ON orders(status, expires_at);
 
 CREATE TABLE IF NOT EXISTS allocations (
-                                           id              INTEGER PRIMARY KEY,
-                                           order_id        INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    id              INTEGER PRIMARY KEY,
+    order_id        INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
     box_id          INTEGER NOT NULL REFERENCES boxes(id),
     pin_code        TEXT NOT NULL, -- "0000".."9999"
     failed_attempts INTEGER NOT NULL DEFAULT 0,
