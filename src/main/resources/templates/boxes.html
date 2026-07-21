@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="cs" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Admin – Boxy</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 24px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background: #f7f7f7; text-align: left; }
+        .state-EMPTY { background: #fff; }
+        .state-AVAILABLE { background: #eaffea; }
+        .state-RESERVED { background: #fff3cd; }
+        .state-OUT_OF_SERVICE { background: #f8d7da; }
+        form { display: inline; margin: 0; }
+        button { padding: 6px 10px; margin-right: 6px; }
+        .muted { color: #666; }
+    </style>
+</head>
+<body>
+
+<h1>Boxy</h1>
+<p class="muted">Prázdné / volné / zamluvené. (MVP: bez přihlášení – přidáme hned potom.)</p>
+
+<table>
+    <thead>
+    <tr>
+        <th>Místo</th>
+        <th>Box</th>
+        <th>Produkt</th>
+        <th>Varianta</th>
+        <th>Stav</th>
+        <th>Akce</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="b : ${boxes}" th:class="'state-' + ${b.state}">
+        <td th:text="${b.locationCode}">FM1</td>
+        <td th:text="${b.boxNo}">1</td>
+        <td th:text="${b.productSku}">A</td>
+        <td th:text="${b.variationCode}">A@FM1</td>
+        <td th:text="${b.state}">AVAILABLE</td>
+        <td>
+            <form th:action="@{'/admin/boxes/' + ${b.id} + '/mark-filled'}" method="post">
+                <button type="submit">Naplněno</button>
+            </form>
+            <form th:action="@{'/admin/boxes/' + ${b.id} + '/mark-empty'}" method="post">
+                <button type="submit">Prázdné</button>
+            </form>
+            <form th:action="@{'/admin/boxes/' + ${b.id} + '/mark-out'}" method="post">
+                <button type="submit">Mimo provoz</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

@@ -15,10 +15,17 @@ repositories { mavenCentral() }
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.xerial:sqlite-jdbc:3.46.1.3'
 
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.test {
+    jvmArgs "-XX:+EnableDynamicAgentLoading"
 }
 
 test {
